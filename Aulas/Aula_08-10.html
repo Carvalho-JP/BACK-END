@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Módulo 9: Frameworks e Express (Aetheria Engine)</title>
+<style>
+:root{--bg:#0f172a;--fg:#f8fafc;--mut:#94a3b8;--ac:#38bdf8;--card:#1e293b;--bd:#334155;--code:#0b1120;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{--bg:#f8fafc;--fg:#0f172a;--mut:#64748b;--ac:#0284c7;--card:#ffffff;--bd:#e2e8f0;--code:#f1f5f9}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;overflow:hidden}
+.bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;font-size:14px;z-index:5}
+.bar span{color:var(--ac);letter-spacing:.08em;text-transform:uppercase;font-size:14px; font-weight: 800;}
+button{font:inherit;font-size:14px;color:var(--fg);background:var(--card);border:1px solid var(--bd);padding:8px 14px;border-radius:6px;cursor:pointer; transition: all 0.2s;}
+button:hover{border-color:var(--ac);color:var(--ac)}
+.bar div{display:flex;gap:8px}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;padding:70px 8vw 80px;overflow-y:auto}
+.slide.active{display:flex}
+.num{color:var(--mut);font-size:15px;font-weight:600;letter-spacing:.06em;margin-bottom:10px}
+h1{font-size:clamp(38px,6vw,72px);margin:0 0 16px;line-height:1.05; background: linear-gradient(to right, var(--fg), var(--ac)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+h2{font-size:clamp(26px,3.6vw,44px);margin:0 0 20px;line-height:1.15; color: var(--ac)}
+h3{font-size:15px;color:var(--mut);margin:0 0 6px;letter-spacing:.04em;text-transform:uppercase}
+p,li{font-size:clamp(17px,1.7vw,23px);line-height:1.5;margin:0 0 10px;max-width:70ch}
+ul{padding-left:1.1em;margin:0}
+.sub{color:var(--mut);font-size:clamp(18px,2vw,26px)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:16px 20px;margin:0;font:clamp(13px,1.35vw,18px)/1.5 'Fira Code', Consolas, monospace;overflow-x:auto;color:var(--fg)}
+code{font-family:'Fira Code', Consolas, monospace;background:var(--code);padding:2px 6px;border-radius:4px;font-size:.9em; border: 1px solid var(--bd);}
+table{border-collapse:collapse;width:100%;font-size:clamp(15px,1.5vw,20px)}
+td,th{border-bottom:1px solid var(--bd);padding:12px 10px;text-align:left}
+th{color:var(--ac);font-size:.85em;text-transform:uppercase;letter-spacing:.05em}
+.nav{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px;color:var(--mut);font-size:14px;z-index:5}
+@media (max-width:760px){.cols{grid-template-columns:1fr}.slide{padding:70px 6vw 80px;justify-content:flex-start}}
+.slide.active>*{animation:up .6s cubic-bezier(0.16, 1, 0.3, 1) both}.slide.active>*:nth-child(2){animation-delay:.1s}.slide.active>*:nth-child(3){animation-delay:.2s}.slide.active>*:nth-child(4){animation-delay:.3s}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+#prog{position:fixed;top:0;left:0;height:4px;width:0;background:var(--ac);transition:width .4s ease-out;z-index:9}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:6px 0 14px}
+.card{transition:transform .2s,border-color .2s}.card:hover{transform:translateY(-5px);border-color:var(--ac)}
+.go{cursor:pointer}
+.tag{display:inline-block;font:700 13px system-ui,Arial,sans-serif;padding:4px 12px;border-radius:6px;color:#fff; text-transform:uppercase;}.g{background:#10b981}.b{background:#3b82f6}.y{background:#f59e0b}.r{background:#ef4444}.p{background:#8b5cf6}.dark{background:#1e293b; border:1px solid var(--bd)}
+.lab-controls{display:flex; gap:10px; margin-bottom: 10px; flex-wrap:wrap;}
+select, input{font:inherit; font-size:16px; background:var(--code); color:var(--fg); border:1px solid var(--bd); padding:10px 14px; border-radius:6px; outline:none;}
+select:focus, input:focus{border-color:var(--ac)}
+.output-box{background:var(--code); border:1px dashed var(--ac); border-radius:8px; padding:16px; margin-top:16px; min-height:120px; font-family:'Fira Code', monospace; white-space:pre-wrap;}
+.flow{display:flex;align-items:center;gap:0;margin:0 0 30px}.node{background:var(--card);border:2px solid var(--bd);border-radius:12px;padding:16px 24px;font-weight:700;font-size:22px;text-align:center; transition:0.3s;}.node.highlight{border-color:var(--ac); box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);}.node small{display:block;font:400 14px system-ui,Arial,sans-serif;color:var(--mut)}
+.line{position:relative;flex:1;height:44px;border-top:2px dashed var(--bd);border-bottom:2px dashed var(--bd)}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+<div class="bar"><span>Aetheria Engine</span><div><button id="theme" type="button">Tema</button></div></div>
+
+<!-- CAPA -->
+<section class="slide active">
+<div class="num">MÓDULO 9</div>
+<h1>Frameworks & Express</h1>
+<p class="sub">Construindo o Servidor do Zero</p>
+<p class="sub">Inversão de Controle, Rotas HTTP e Monolitos</p>
+</section>
+
+<!-- ÍNDICE -->
+<section class="slide">
+<div class="num">ROTEIRO</div>
+<h2>A Jornada do Back-End</h2>
+<div class="grid">
+<div class="card go" data-go="2"><h3>Fundamentos</h3><b>A Inversão</b><p>Biblioteca vs Framework.</p></div>
+<div class="card go" data-go="3"><h3>Ecossistema</h3><b>Os Titãs</b><p>Express, Fastify e NestJS.</p></div>
+<div class="card go" data-go="4"><h3>Arquitetura</h3><b>O Monolito</b><p>Por que separar app.ts de server.ts?</p></div>
+<div class="card go" data-go="5"><h3>O Duelo</h3><b>PUT vs PATCH</b><p>A batalha das atualizações.</p></div>
+<div class="card go" data-go="6"><h3>Laboratório</h3><b>Simulador API</b><p>Console interativo de testes.</p></div>
+</div>
+</section>
+
+<!-- INVERSÃO DE CONTROLE -->
+<section class="slide">
+<div class="num">TEORIA</div>
+<h2>O que é um Framework?</h2>
+<div class="cols">
+<div class="card">
+<h3>A Caixa de Ferramentas (Biblioteca)</h3>
+<p>O módulo <code>fs</code> ou a biblioteca de datas <code>date-fns</code>. <strong>Você está no controle.</strong> Você chama a ferramenta, ela faz o trabalho e te devolve o controle do fluxo.</p>
+</div>
+<div class="card" style="border-color:var(--ac)">
+<h3>A Fábrica (Framework)</h3>
+<p>O Framework dita as regras e o fluxo de execução. Você escreve o seu código para preencher os "buracos" que a fábrica deixou para você.</p>
+<p class="mut" style="font-size:14px; margin-top:10px;">Chamamos isso de Inversão de Controle (IoC): "Não nos ligue, nós ligamos pra você".</p>
+</div>
+</div>
+</section>
+
+<!-- ECOSSISTEMA TS -->
+<section class="slide">
+<div class="num">TEORIA</div>
+<h2>O Ecossistema TypeScript Node.js</h2>
+<div class="grid">
+<div class="card" style="border-top:4px solid #3b82f6">
+<h3>Express.js</h3>
+<p>O vovô da internet moderna. Minimalista e extremamente flexível. Você pode montar as pastas como quiser.</p>
+<p class="mut" style="font-size:13px">Excelente para iniciar e aprender os fundamentos do HTTP.</p>
+</div>
+<div class="card" style="border-top:4px solid #10b981">
+<h3>Fastify</h3>
+<p>O sucessor focado em pura performance. Otimizado para suportar o dobro de acessos simultâneos.</p>
+</div>
+<div class="card" style="border-top:4px solid #ef4444">
+<h3>NestJS</h3>
+<p>Nível Enterprise (Empresarial). Opiniático e extremamente rigoroso. Exige Arquitetura Limpa e Orientação a Objetos.</p>
+<p class="mut" style="font-size:13px">Será o nosso foco no terceiro ano.</p>
+</div>
+</div>
+</section>
+
+<!-- ARQUITETURA -->
+<section class="slide">
+<div class="num">ARQUITETURA</div>
+<h2>app.ts vs server.ts</h2>
+<p>Nunca coloque tudo em um arquivo só (<code>index.ts</code>). Separe o <strong>Motor</strong> da <strong>Ignição</strong>.</p>
+<div class="cols">
+<div class="card">
+<h3>app.ts (O Motor)</h3>
+<pre>import express from 'express';
+const app = express();
+app.use(express.json());
+
+// Cadastro de Rotas
+app.get('/jogadores', (req, res) => {
+  res.json({ msg: "Lista" });
+});
+
+export default app;</pre>
+<p class="mut" style="margin-top:10px; font-size:14px">O servidor existe, mas não está "escutando" a rede ainda. Essencial para Testes Automatizados no futuro.</p>
+</div>
+<div class="card">
+<h3>server.ts (A Ignição)</h3>
+<pre>import app from './app';
+
+const PORTA = 3000;
+
+app.listen(PORTA, () => {
+  console.log("Servidor Online!");
+});</pre>
+<p class="mut" style="margin-top:10px; font-size:14px">Apenas importa o motor e acende a faísca na porta 3000.</p>
+</div>
+</div>
+</section>
+
+<!-- PUT VS PATCH -->
+<section class="slide">
+<div class="num">MÉTODOS HTTP</div>
+<h2>A Batalha: PUT vs PATCH</h2>
+<p>Ambos servem para atualizar recursos no Banco de Dados, mas trabalham de forma bem diferente.</p>
+<div class="cols">
+<div class="card">
+<h3><span class="tag y">PUT</span> Substituição Total</h3>
+<p>Recebe o objeto <strong>inteiro</strong> do cliente e substitui o antigo. Se o cliente esquecer de mandar o `inventário`, o servidor apagará o inventário do banco!</p>
+<pre>PUT /jogadores/1
+{
+  "nome": "Arthas",
+  "level": 50,
+  "vivo": true
+}</pre>
+</div>
+<div class="card">
+<h3><span class="tag p">PATCH</span> Atualização Parcial</h3>
+<p>O Bisturi Cirúrgico. Envia apenas a propriedade que mudou. O servidor preserva todo o resto do dado intocado.</p>
+<pre>PATCH /jogadores/1
+{
+  "level": 51
+}</pre>
+</div>
+</div>
+</section>
+
+<!-- LABORATÓRIO -->
+<section class="slide">
+<div class="num">LABORATÓRIO</div>
+<h2>Postman Simulator (Express Router)</h2>
+<p class="mut">Selecione um método HTTP e simule uma chamada à API local do nosso servidor.</p>
+<div class="card">
+  <div class="lab-controls">
+    <select id="sim-method">
+      <option value="GET">GET</option>
+      <option value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="PATCH">PATCH</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+    <input type="text" id="sim-url" value="/jogadores" style="flex:1" placeholder="/rota">
+    <button id="sim-btn" style="background:var(--ac); color:#000; font-weight:bold;">Enviar Requisição</button>
+  </div>
+  <div class="lab-controls">
+    <input type="text" id="sim-body" placeholder='{"nome": "Faker"}' style="flex:1; font-family:monospace; font-size:14px;" title="Corpo JSON da Requisição (Apenas para POST/PUT/PATCH)">
+  </div>
+  
+  <div style="margin-top:16px;">
+      <strong>Resposta do Servidor Express:</strong>
+      <div id="sim-out" class="output-box" style="color:var(--mut)">Aguardando requisição...</div>
+  </div>
+</div>
+</section>
+
+<!-- ENCERRAMENTO -->
+<section class="slide">
+<div class="num">LIVE CODING</div>
+<h2>Mão na Massa</h2>
+<div class="grid">
+<div class="card"><h3>1. Setup</h3><p>Instalação do `express` e do `@types/express`.</p></div>
+<div class="card"><h3>2. app.ts</h3><p>Configuração do Middleware para aceitar JSON.</p></div>
+<div class="card"><h3>3. Rotas</h3><p>Construção do CRUD em Array na memória.</p></div>
+<div class="card"><h3>4. Insomnia/Postman</h3><p>Teste ao vivo das nossas requisições HTTP.</p></div>
+</div>
+<br>
+<h2 style="text-align:center; margin-top:20px;">Bora codar! 💻</h2>
+</section>
+
+<!-- CONTROLES -->
+<div class="nav"><button id="prev" type="button">Anterior</button><span id="count"></span><button id="next" type="button">Próximo</button></div>
+
+<script>
+// Motor da Apresentação Slide a Slide
+var slides=[].slice.call(document.querySelectorAll('.slide')),i=0;
+var root=document.documentElement,tb=document.getElementById('theme');
+
+let isDark = localStorage.getItem('aetheria_theme') !== 'light';
+root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+function label(){tb.textContent=isDark?'Modo Claro':'Modo Escuro'}
+tb.onclick=function(){
+    isDark=!isDark;
+    localStorage.setItem('aetheria_theme', isDark ? 'dark' : 'light');
+    root.setAttribute('data-theme',isDark?'dark':'light');
+    label();
+};
+label();
+
+function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    document.getElementById('count').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('prog').style.width=((i+1)/slides.length*100)+'%';
+}
+document.getElementById('prev').onclick=function(){show(i-1)};
+document.getElementById('next').onclick=function(){show(i+1)};
+document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown')show(i+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp')show(i-1);
+});
+
+document.querySelectorAll('[data-go]').forEach(function(c){c.onclick=function(){show(+c.dataset.go)}});
+
+// Simulador da API no Lab
+let db = [{ id: 1, nome: "Faker", level: 50 }, { id: 2, nome: "Jukes", level: 99 }];
+document.getElementById('sim-btn').onclick = function() {
+    const met = document.getElementById('sim-method').value;
+    const url = document.getElementById('sim-url').value;
+    const bod = document.getElementById('sim-body').value;
+    const out = document.getElementById('sim-out');
+    
+    out.style.color = 'var(--fg)';
+    out.style.borderColor = 'var(--ac)';
+    
+    try {
+        let status = "200 OK";
+        let res = "";
+        
+        if(met === 'GET') {
+            if(url.includes('/1')) { res = JSON.stringify(db[0], null, 2); }
+            else if(url.includes('/2')) { res = JSON.stringify(db[1], null, 2); }
+            else { res = JSON.stringify(db, null, 2); }
+        }
+        else if(met === 'POST') {
+            if(!bod) throw new Error("Faltou enviar o JSON no Corpo (Body)!");
+            let j = JSON.parse(bod);
+            j.id = 3; 
+            status = "201 Created";
+            res = JSON.stringify({ mensagem: "Jogador Cadastrado!", dado: j }, null, 2);
+        }
+        else if(met === 'PUT' || met === 'PATCH') {
+            if(!bod) throw new Error("Cadê o JSON do jogador para atualizar?");
+            JSON.parse(bod); // valida sintaxe
+            res = JSON.stringify({ mensagem: `Jogador atualizado via ${met}!` }, null, 2);
+        }
+        else if(met === 'DELETE') {
+            status = "204 No Content";
+            res = "(Sem dados. Jogador foi deletado!)";
+        }
+        
+        out.innerHTML = `<span style="color:#10b981; font-weight:bold;">HTTP/1.1 ${status}</span>\n\n${res}`;
+        
+    } catch(err) {
+        out.style.color = '#ef4444';
+        out.style.borderColor = '#ef4444';
+        out.innerHTML = `<span style="font-weight:bold;">HTTP/1.1 400 Bad Request</span>\n\nErro: ${err.message}`;
+    }
+};
+
+show(0);
+</script>
+</body>
+</html>
